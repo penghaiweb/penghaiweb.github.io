@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自习课监管系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 25px;
+            overflow: hidden;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+        
+        .description {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .control-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            margin-bottom: 30px;
+            background: linear-gradient(to right, #f8f9fa, #e9ecef);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .control-group {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .control-group h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        select, button {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+        
+        select:focus, button:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3);
+        }
+        
+        button {
+            background: linear-gradient(to right, #3498db, #2980b9);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        button.stop {
+            background: linear-gradient(to right, #e74c3c, #c0392b);
+        }
+        
+        button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .monitoring-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .video-container, .decibel-meter {
+            flex: 1;
+            min-width: 300px;
+            background: linear-gradient(to bottom, #2c3e50, #34495e);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .video-container h2, .decibel-meter h2 {
+            color: white;
+            padding: 15px 20px;
+            background-color: rgba(0, 0, 0, 0.3);
+            margin: 0;
+            font-size: 1.3rem;
+        }
+        
+        #videoElement {
+            width: 100%;
+            display: block;
+            min-height: 300px;
+            background-color: #000;
+        }
+        
+        .decibel-display {
+            padding: 30px 20px;
+            text-align: center;
+            color: white;
+        }
+        
+        .decibel-value {
+            font-size: 4rem;
+            font-weight: bold;
+            margin: 20px 0;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+        }
+        
+        .decibel-threshold {
+            font-size: 1rem;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .threshold-slider {
+            width: 100%;
+            margin: 15px 0;
+            -webkit-appearance: none;
+            height: 8px;
+            border-radius: 4px;
+            background: #ddd;
+            outline: none;
+        }
+        
+        .threshold-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+        }
+        
+        .incident-log {
+            background: linear-gradient(to right, #f8f9fa, #e9ecef);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .incident-log h2 {
+            margin-bottom: 20px;
+            color: #2c3e50;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+        
+        #logList {
+            list-style-type: none;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        
+        #logList::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        #logList::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        #logList::-webkit-scrollbar-thumb {
+            background: #3498db;
+            border-radius: 4px;
+        }
+        
+        .log-entry {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: flex-start;
+            background: white;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        .log-time {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            min-width: 80px;
+        }
+        
+        .log-details {
+            flex-grow: 1;
+            margin-left: 15px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .status-normal {
+            background-color: #2ecc71;
+        }
+        
+        .status-warning {
+            background-color: #f39c12;
+        }
+        
+        .status-exceeded {
+            background-color: #e74c3c;
+        }
+        
+        .captured-image {
+            max-width: 100%;
+            margin-top: 10px;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border: 1px solid #ddd;
+        }
+        
+        .permission-note {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+            border-left: 4px solid #ffeaa7;
+        }
+        
+        @media (max-width: 768px) {
+            .monitoring-area {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+        
+        .meter-container {
+            width: 100%;
+            height: 20px;
+            background: #ecf0f1;
+            border-radius: 10px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        
+        .meter-fill {
+            height: 100%;
+            background: linear-gradient(to right, #2ecc71, #f39c12, #e74c3c);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.5s;
+        }
+        
+        .cooldown-indicator {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>自习课监管系统</h1>
+            <p class="description">实时监控自习室环境，记录分贝超标事件，帮助维持良好的学习环境</p>
+        </header>
+        
+        <div class="control-panel">
+            <div class="control-group">
+                <h3>设备与设置</h3>
+                <label for="cameraSelect">选择摄像头：</label>
+                <select id="cameraSelect">
+                    <option value="">-- 请先允许摄像头访问权限 --</option>
+                </select>
+                
+                <label for="threshold">分贝阈值 (dB)：<span id="thresholdValue">60</span></label>
+                <input type="range" id="threshold" class="threshold-slider" min="30" max="100" value="60">
+                
+                <div class="meter-container">
+                    <div class="meter-fill" id="meterFill"></div>
+                </div>
+                
+                <label for="cooldown">记录冷却时间 (秒)：<span id="cooldownValue">5</span></label>
+                <input type="range" id="cooldown" class="threshold-slider" min="1" max="30" value="5">
+                
+                <button id="startBtn">开始监控</button>
+                <button id="stopBtn" class="stop" disabled>停止监控</button>
+            </div>
+            
+            <div class="control-group">
+                <h3>使用说明</h3>
+                <ol>
+                    <li>点击"开始监控"按钮，允许浏览器访问摄像头和麦克风</li>
+                    <li>从下拉菜单中选择要使用的摄像头设备</li>
+                    <li>设置分贝阈值（超过此值将自动记录画面）</li>
+                    <li>设置记录冷却时间（防止连续记录）</li>
+                    <li>系统将实时显示摄像头画面和分贝值</li>
+                    <li>当分贝超过阈值时，系统会自动截图并记录事件</li>
+                    <li>点击"停止监控"可结束监控</li>
+                </ol>
+                
+                <div class="permission-note">
+                    <strong>注意：</strong>首次使用需要允许浏览器访问摄像头和麦克风。如果未看到摄像头选项，请刷新页面并允许权限。
+                </div>
+            </div>
+        </div>
+        
+        <div class="monitoring-area">
+            <div class="video-container">
+                <h2>实时监控画面</h2>
+                <video id="videoElement" autoplay playsinline></video>
+            </div>
+            
+            <div class="decibel-meter">
+                <h2>分贝监测</h2>
+                <div class="decibel-display">
+                    <div>当前分贝值</div>
+                    <div class="decibel-value" id="decibelValue">--</div>
+                    <div>dB</div>
+                    <div class="cooldown-indicator" id="cooldownIndicator">冷却时间: 0秒</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="incident-log">
+            <h2>事件记录</h2>
+            <ul id="logList">
+                <li class="log-entry">
+                    <span class="log-time">系统就绪</span>
+                    <div class="log-details">
+                        <span class="status-indicator status-normal"></span>
+                        <strong>系统初始化完成</strong>: 等待开始监控
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let mediaStream = null;
+        let audioContext = null;
+        let analyser = null;
+        let microphone = null;
+        let javascriptNode = null;
+        let isMonitoring = false;
+        let threshold = 60;
+        let cooldownTime = 5; // 冷却时间（秒）
+        let isInCooldown = false;
+        let cooldownTimer = null;
+        let devices = [];
+        
+        // DOM元素
+        const cameraSelect = document.getElementById('cameraSelect');
+        const videoElement = document.getElementById('videoElement');
+        const decibelValue = document.getElementById('decibelValue');
+        const thresholdSlider = document.getElementById('threshold');
+        const thresholdValue = document.getElementById('thresholdValue');
+        const cooldownSlider = document.getElementById('cooldown');
+        const cooldownValue = document.getElementById('cooldownValue');
+        const cooldownIndicator = document.getElementById('cooldownIndicator');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const logList = document.getElementById('logList');
+        const meterFill = document.getElementById('meterFill');
+        
+        // 初始化摄像头选择
+        async function initializeCameras() {
+            try {
+                // 先获取用户媒体权限
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                
+                // 停止这个流，我们只是用来获取权限
+                stream.getTracks().forEach(track => track.stop());
+                
+                // 现在枚举设备
+                devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                
+                // 清空并更新摄像头选择
+                cameraSelect.innerHTML = '';
+                
+                if (videoDevices.length === 0) {
+                    cameraSelect.innerHTML = '<option value="">未检测到摄像头</option>';
+                } else {
+                    videoDevices.forEach(device => {
+                        const option = document.createElement('option');
+                        option.value = device.deviceId;
+                        option.text = device.label || `摄像头 ${cameraSelect.length + 1}`;
+                        cameraSelect.appendChild(option);
+                    });
+                }
+                
+                // 添加日志
+                addLogEntry('系统', `检测到 ${videoDevices.length} 个摄像头设备`);
+                
+            } catch (error) {
+                console.error('获取设备权限失败:', error);
+                cameraSelect.innerHTML = '<option value="">权限被拒绝，请刷新页面重试</option>';
+                addLogEntry('错误', '无法访问摄像头和麦克风，请检查权限设置');
+            }
+        }
+        
+        // 开始监控
+        async function startMonitoring() {
+            try {
+                const cameraId = cameraSelect.value;
+                
+                // 如果没有选择摄像头，使用默认摄像头
+                const constraints = {
+                    video: cameraId ? { deviceId: { exact: cameraId } } : true,
+                    audio: true
+                };
+                
+                mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+                videoElement.srcObject = mediaStream;
+                
+                // 设置音频分析
+                setupAudioAnalysis();
+                
+                // 更新UI状态
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+                cameraSelect.disabled = true;
+                thresholdSlider.disabled = true;
+                cooldownSlider.disabled = true;
+                isMonitoring = true;
+                
+                // 添加日志
+                addLogEntry('系统启动', '开始监控自习室环境');
+                
+            } catch (error) {
+                console.error('访问摄像头/麦克风失败:', error);
+                let errorMsg = '无法访问摄像头或麦克风';
+                
+                if (error.name === 'NotAllowedError') {
+                    errorMsg = '权限被拒绝，请允许摄像头和麦克风访问';
+                } else if (error.name === 'NotFoundError') {
+                    errorMsg = '未找到摄像头设备';
+                } else if (error.name === 'NotReadableError') {
+                    errorMsg = '摄像头正被其他应用使用';
+                }
+                
+                alert(errorMsg);
+                addLogEntry('错误', errorMsg);
+            }
+        }
+        
+        // 设置音频分析
+        function setupAudioAnalysis() {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioContext.createAnalyser();
+            microphone = audioContext.createMediaStreamSource(mediaStream);
+            javascriptNode = audioContext.createScriptProcessor(2048, 1, 1);
+            
+            analyser.smoothingTimeConstant = 0.8;
+            analyser.fftSize = 1024;
+            
+            microphone.connect(analyser);
+            analyser.connect(javascriptNode);
+            javascriptNode.connect(audioContext.destination);
+            
+            javascriptNode.onaudioprocess = processAudio;
+        }
+        
+        // 处理音频数据
+        function processAudio() {
+            if (!isMonitoring) return;
+            
+            const array = new Uint8Array(analyser.frequencyBinCount);
+            analyser.getByteFrequencyData(array);
+            
+            // 计算平均音量
+            let values = 0;
+            for (let i = 0; i < array.length; i++) {
+                values += array[i];
+            }
+            
+            const average = values / array.length;
+            // 转换为分贝值（简化计算）
+            const db = Math.round(average * 0.5);
+            
+            // 更新UI
+            decibelValue.textContent = db;
+            
+            // 更新仪表
+            const fillPercentage = Math.min(100, (db / 100) * 100);
+            meterFill.style.width = `${fillPercentage}%`;
+            
+            // 检查是否超过阈值
+            if (db > threshold) {
+                decibelValue.style.color = '#e74c3c';
+                
+                // 只有在非冷却状态时才记录
+                if (!isInCooldown) {
+                    captureAndLog(db);
+                    startCooldown();
+                }
+            } else if (db > threshold * 0.8) {
+                decibelValue.style.color = '#f39c12';
+            } else {
+                decibelValue.style.color = '#2ecc71';
+            }
+        }
+        
+        // 开始冷却时间
+        function startCooldown() {
+            isInCooldown = true;
+            let remainingTime = cooldownTime;
+            
+            // 更新冷却指示器
+            cooldownIndicator.textContent = `冷却时间: ${remainingTime}秒`;
+            cooldownIndicator.style.color = '#e74c3c';
+            
+            // 设置定时器更新冷却时间
+            cooldownTimer = setInterval(() => {
+                remainingTime--;
+                cooldownIndicator.textContent = `冷却时间: ${remainingTime}秒`;
+                
+                if (remainingTime <= 0) {
+                    clearInterval(cooldownTimer);
+                    isInCooldown = false;
+                    cooldownIndicator.textContent = '冷却时间: 0秒';
+                    cooldownIndicator.style.color = '#7f8c8d';
+                }
+            }, 1000);
+        }
+        
+        // 捕获画面并记录事件
+        function captureAndLog(db) {
+            // 创建canvas来捕获视频帧
+            const canvas = document.createElement('canvas');
+            canvas.width = videoElement.videoWidth;
+            canvas.height = videoElement.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+            
+            // 将canvas转换为数据URL
+            const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+            
+            // 添加日志条目
+            addLogEntry('分贝超标', `检测到分贝值: ${db}dB`, imageDataUrl);
+        }
+        
+        // 添加日志条目
+        function addLogEntry(type, details, imageDataUrl = null) {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString();
+            
+            const logEntry = document.createElement('li');
+            logEntry.className = 'log-entry';
+            
+            let statusClass = 'status-normal';
+            if (type === '分贝超标') statusClass = 'status-exceeded';
+            else if (type === '警告') statusClass = 'status-warning';
+            
+            logEntry.innerHTML = `
+                <span class="log-time">${timeString}</span>
+                <div class="log-details">
+                    <span class="status-indicator ${statusClass}"></span>
+                    <strong>${type}</strong>: ${details}
+                    ${imageDataUrl ? `<br><img src="${imageDataUrl}" class="captured-image" alt="捕获的画面">` : ''}
+                </div>
+            `;
+            
+            logList.prepend(logEntry);
+            
+            // 限制日志数量
+            if (logList.children.length > 20) {
+                logList.removeChild(logList.lastChild);
+            }
+        }
+        
+        // 停止监控
+        function stopMonitoring() {
+            isMonitoring = false;
+            
+            // 清除冷却定时器
+            if (cooldownTimer) {
+                clearInterval(cooldownTimer);
+            }
+            
+            // 停止所有媒体流
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+            }
+            
+            // 关闭音频上下文
+            if (audioContext) {
+                audioContext.close();
+            }
+            
+            // 更新UI
+            videoElement.srcObject = null;
+            decibelValue.textContent = '--';
+            decibelValue.style.color = '#ffffff';
+            meterFill.style.width = '0%';
+            isInCooldown = false;
+            cooldownIndicator.textContent = '冷却时间: 0秒';
+            cooldownIndicator.style.color = '#7f8c8d';
+            
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            cameraSelect.disabled = false;
+            thresholdSlider.disabled = false;
+            cooldownSlider.disabled = false;
+            
+            // 添加日志
+            addLogEntry('系统停止', '监控已停止');
+        }
+        
+        // 事件监听器
+        startBtn.addEventListener('click', startMonitoring);
+        stopBtn.addEventListener('click', stopMonitoring);
+        
+        thresholdSlider.addEventListener('input', function() {
+            threshold = parseInt(this.value);
+            thresholdValue.textContent = threshold;
+        });
+        
+        cooldownSlider.addEventListener('input', function() {
+            cooldownTime = parseInt(this.value);
+            cooldownValue.textContent = cooldownTime;
+        });
+        
+        // 初始化
+        window.addEventListener('load', function() {
+            // 先尝试初始化摄像头
+            initializeCameras();
+            
+            // 当设备列表变化时重新初始化
+            navigator.mediaDevices.addEventListener('devicechange', initializeCameras);
+        });
+    </script>
+</body>
+</html>
