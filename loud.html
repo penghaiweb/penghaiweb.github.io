@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML音频放大器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            width: 100%;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #4cc9f0, #4361ee);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #a9a9a9;
+            margin-bottom: 5px;
+        }
+        
+        .app-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .app-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .control-panel {
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+        
+        .visualization-panel {
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+        
+        .panel-title {
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            color: #4cc9f0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .panel-title i {
+            margin-right: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #e0e0e0;
+        }
+        
+        select, button {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        select:hover, select:focus {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-color: #4cc9f0;
+            outline: none;
+        }
+        
+        button {
+            background: linear-gradient(90deg, #4361ee, #3a0ca3);
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background: linear-gradient(90deg, #3a0ca3, #4361ee);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .button-icon {
+            margin-right: 8px;
+            font-size: 1.2rem;
+        }
+        
+        .volume-control {
+            margin-top: 30px;
+        }
+        
+        .volume-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .volume-value {
+            font-weight: 600;
+            color: #4cc9f0;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #4cc9f0;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(76, 201, 240, 0.5);
+        }
+        
+        .volume-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 5px;
+        }
+        
+        .indicator {
+            height: 4px;
+            width: 9%;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+        }
+        
+        .indicator.active {
+            background-color: #4cc9f0;
+        }
+        
+        .visualization-container {
+            height: 200px;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .status.off {
+            background-color: rgba(255, 0, 0, 0.1);
+            color: #ff6b6b;
+        }
+        
+        .status.on {
+            background-color: rgba(0, 255, 0, 0.1);
+            color: #51ff51;
+        }
+        
+        .status-icon {
+            margin-right: 8px;
+            font-size: 1.2rem;
+        }
+        
+        .instructions {
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+        
+        .instructions h3 {
+            color: #4cc9f0;
+            margin-bottom: 15px;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #888;
+            font-size: 0.9rem;
+            width: 100%;
+        }
+        
+        .warning {
+            color: #ffa726;
+            background-color: rgba(255, 167, 38, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+        
+        .device-info {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+        
+        .device-info i {
+            margin-right: 8px;
+            color: #4cc9f0;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-volume-up"></i> HTML 扩音器</h1>
+            <p class="subtitle">实时麦克风音频放大器</p>
+            <p class="subtitle">将麦克风声音放大并输出到扬声器</p>
+        </header>
+        
+        <div class="app-container">
+            <div class="control-panel">
+                <h2 class="panel-title"><i class="fas fa-sliders-h"></i> 控制面板</h2>
+                
+                <div class="form-group">
+                    <label for="microphone-select"><i class="fas fa-microphone"></i> 选择麦克风</label>
+                    <select id="microphone-select">
+                        <option value="" disabled selected>正在检测麦克风设备...</option>
+                    </select>
+                    <div class="device-info">
+                        <i class="fas fa-info-circle"></i>
+                        <span id="device-info">正在检测音频设备...</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <button id="toggle-btn">
+                        <span class="button-icon"><i class="fas fa-play"></i></span>
+                        <span id="button-text">启动扩音器</span>
+                    </button>
+                </div>
+                
+                <div class="volume-control">
+                    <div class="volume-label">
+                        <span><i class="fas fa-volume-up"></i> 音量增益</span>
+                        <span class="volume-value" id="volume-value">1.0x</span>
+                    </div>
+                    <input type="range" id="volume-slider" min="1" max="20" step="0.5" value="1">
+                    <div class="volume-indicator" id="volume-indicator">
+                        <!-- 通过JS动态生成 -->
+                    </div>
+                </div>
+                
+                <div class="status off" id="status">
+                    <i class="fas fa-power-off status-icon"></i>
+                    <span id="status-text">扩音器已关闭</span>
+                </div>
+            </div>
+            
+            <div class="visualization-panel">
+                <h2 class="panel-title"><i class="fas fa-chart-line"></i> 音频可视化</h2>
+                <div class="visualization-container">
+                    <canvas id="visualizer"></canvas>
+                </div>
+                <div class="warning">
+                    <i class="fas fa-exclamation-triangle"></i> 注意：使用高音量时请注意保护听力，避免长时间暴露在高音量环境中。
+                </div>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h3><i class="fas fa-info-circle"></i> 使用说明</h3>
+            <ul>
+                <li>1. 首次使用时，浏览器会请求麦克风权限，请点击"允许"</li>
+                <li>2. 从下拉菜单中选择要使用的麦克风设备</li>
+                <li>3. 点击"启动扩音器"开始音频输入</li>
+                <li>4. 使用音量滑块调整声音放大倍数（1-20倍）</li>
+                <li>5. 实时音频可视化会显示当前声音的频率和振幅</li>
+                <li>6. 注意：此工具需要HTTPS连接或localhost环境才能正常工作</li>
+            </ul>
+        </div>
+        
+        <footer>
+            <p>HTML扩音器 &copy; 2023 | 使用Web Audio API构建 | 适用于Chrome、Firefox、Edge等现代浏览器</p>
+        </footer>
+    </div>
+
+    <script>
+        // 全局变量
+        let audioContext = null;
+        let source = null;
+        let gainNode = null;
+        let analyser = null;
+        let microphoneStream = null;
+        let isActive = false;
+        let selectedDeviceId = null;
+        
+        // DOM元素
+        const microphoneSelect = document.getElementById('microphone-select');
+        const toggleBtn = document.getElementById('toggle-btn');
+        const buttonText = document.getElementById('button-text');
+        const volumeSlider = document.getElementById('volume-slider');
+        const volumeValue = document.getElementById('volume-value');
+        const volumeIndicator = document.getElementById('volume-indicator');
+        const status = document.getElementById('status');
+        const statusText = document.getElementById('status-text');
+        const deviceInfo = document.getElementById('device-info');
+        const canvas = document.getElementById('visualizer');
+        const canvasCtx = canvas.getContext('2d');
+        
+        // 初始化音量指示器
+        function initVolumeIndicator() {
+            volumeIndicator.innerHTML = '';
+            for (let i = 0; i < 20; i++) {
+                const indicator = document.createElement('div');
+                indicator.className = 'indicator';
+                volumeIndicator.appendChild(indicator);
+            }
+            updateVolumeIndicator(1);
+        }
+        
+        // 更新音量指示器
+        function updateVolumeIndicator(value) {
+            const indicators = volumeIndicator.querySelectorAll('.indicator');
+            const activeCount = Math.floor(value);
+            
+            indicators.forEach((indicator, index) => {
+                if (index < activeCount) {
+                    indicator.classList.add('active');
+                } else {
+                    indicator.classList.remove('active');
+                }
+            });
+        }
+        
+        // 获取麦克风设备列表
+        async function getMicrophoneDevices() {
+            try {
+                // 首先获取用户权限
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                // 停止流以释放资源
+                stream.getTracks().forEach(track => track.stop());
+                
+                // 获取设备列表
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const audioInputDevices = devices.filter(device => device.kind === 'audioinput');
+                
+                // 清空选择框
+                microphoneSelect.innerHTML = '';
+                
+                if (audioInputDevices.length === 0) {
+                    microphoneSelect.innerHTML = '<option value="" disabled selected>未找到麦克风设备</option>';
+                    deviceInfo.textContent = "未检测到麦克风设备";
+                    toggleBtn.disabled = true;
+                    return;
+                }
+                
+                // 添加默认选项
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.textContent = '-- 选择麦克风 --';
+                defaultOption.disabled = true;
+                defaultOption.selected = true;
+                microphoneSelect.appendChild(defaultOption);
+                
+                // 添加设备选项
+                audioInputDevices.forEach((device, index) => {
+                    const label = device.label || `麦克风 ${index + 1}`;
+                    const option = document.createElement('option');
+                    option.value = device.deviceId;
+                    option.textContent = label;
+                    microphoneSelect.appendChild(option);
+                });
+                
+                deviceInfo.textContent = `检测到 ${audioInputDevices.length} 个音频输入设备`;
+                toggleBtn.disabled = false;
+                
+            } catch (error) {
+                console.error('获取麦克风设备时出错:', error);
+                microphoneSelect.innerHTML = '<option value="" disabled selected>无法访问麦克风，请检查权限</option>';
+                deviceInfo.textContent = "麦克风访问被拒绝或设备不可用";
+                toggleBtn.disabled = true;
+            }
+        }
+        
+        // 初始化音频上下文
+        function initAudioContext() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+        
+        // 启动扩音器
+        async function startAmplifier() {
+            if (!microphoneSelect.value) {
+                alert('请先选择麦克风设备');
+                return;
+            }
+            
+            try {
+                initAudioContext();
+                
+                // 获取麦克风音频流
+                const constraints = {
+                    audio: {
+                        deviceId: { exact: microphoneSelect.value },
+                        echoCancellation: false,
+                        noiseSuppression: false,
+                        autoGainControl: false
+                    }
+                };
+                
+                microphoneStream = await navigator.mediaDevices.getUserMedia(constraints);
+                
+                // 创建音频节点
+                source = audioContext.createMediaStreamSource(microphoneStream);
+                gainNode = audioContext.createGain();
+                analyser = audioContext.createAnalyser();
+                
+                // 配置分析器用于可视化
+                analyser.fftSize = 256;
+                analyser.smoothingTimeConstant = 0.8;
+                
+                // 连接音频节点: source -> gain -> analyser -> destination
+                source.connect(gainNode);
+                gainNode.connect(analyser);
+                analyser.connect(audioContext.destination);
+                
+                // 设置初始增益
+                gainNode.gain.value = parseFloat(volumeSlider.value);
+                
+                // 更新状态
+                isActive = true;
+                updateUI();
+                startVisualization();
+                
+            } catch (error) {
+                console.error('启动扩音器时出错:', error);
+                alert('无法访问麦克风: ' + error.message);
+                stopAmplifier();
+            }
+        }
+        
+        // 停止扩音器
+        function stopAmplifier() {
+            if (microphoneStream) {
+                microphoneStream.getTracks().forEach(track => track.stop());
+                microphoneStream = null;
+            }
+            
+            if (audioContext && audioContext.state !== 'closed') {
+                // 断开所有连接
+                if (source) {
+                    source.disconnect();
+                }
+                if (gainNode) {
+                    gainNode.disconnect();
+                }
+                if (analyser) {
+                    analyser.disconnect();
+                }
+            }
+            
+            isActive = false;
+            updateUI();
+            stopVisualization();
+        }
+        
+        // 更新UI状态
+        function updateUI() {
+            if (isActive) {
+                buttonText.textContent = '停止扩音器';
+                toggleBtn.innerHTML = '<span class="button-icon"><i class="fas fa-stop"></i></span><span id="button-text">停止扩音器</span>';
+                status.className = 'status on';
+                statusText.textContent = '扩音器已启动 - 正在监听麦克风';
+                microphoneSelect.disabled = true;
+            } else {
+                buttonText.textContent = '启动扩音器';
+                toggleBtn.innerHTML = '<span class="button-icon"><i class="fas fa-play"></i></span><span id="button-text">启动扩音器</span>';
+                status.className = 'status off';
+                statusText.textContent = '扩音器已关闭';
+                microphoneSelect.disabled = false;
+            }
+        }
+        
+        // 音频可视化
+        function startVisualization() {
+            if (!analyser) return;
+            
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            
+            canvas.width = canvas.clientWidth;
+            canvas.height = canvas.clientHeight;
+            
+            function draw() {
+                if (!isActive) return;
+                
+                requestAnimationFrame(draw);
+                
+                analyser.getByteFrequencyData(dataArray);
+                
+                canvasCtx.fillStyle = 'rgb(10, 10, 20)';
+                canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // 绘制频率条
+                const barWidth = (canvas.width / bufferLength) * 2.5;
+                let barHeight;
+                let x = 0;
+                
+                for (let i = 0; i < bufferLength; i++) {
+                    barHeight = (dataArray[i] / 255) * canvas.height;
+                    
+                    // 创建渐变效果
+                    const gradient = canvasCtx.createLinearGradient(0, canvas.height - barHeight, 0, canvas.height);
+                    gradient.addColorStop(0, '#4cc9f0');
+                    gradient.addColorStop(0.7, '#4361ee');
+                    gradient.addColorStop(1, '#3a0ca3');
+                    
+                    canvasCtx.fillStyle = gradient;
+                    canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+                    
+                    x += barWidth + 1;
+                }
+                
+                // 绘制振幅波形
+                analyser.getByteTimeDomainData(dataArray);
+                
+                canvasCtx.lineWidth = 2;
+                canvasCtx.strokeStyle = '#f72585';
+                canvasCtx.beginPath();
+                
+                const sliceWidth = canvas.width * 1.0 / bufferLength;
+                x = 0;
+                
+                for (let i = 0; i < bufferLength; i++) {
+                    const v = dataArray[i] / 128.0;
+                    const y = v * canvas.height / 2;
+                    
+                    if (i === 0) {
+                        canvasCtx.moveTo(x, y);
+                    } else {
+                        canvasCtx.lineTo(x, y);
+                    }
+                    
+                    x += sliceWidth;
+                }
+                
+                canvasCtx.lineTo(canvas.width, canvas.height / 2);
+                canvasCtx.stroke();
+            }
+            
+            draw();
+        }
+        
+        // 停止可视化
+        function stopVisualization() {
+            canvasCtx.fillStyle = 'rgb(10, 10, 20)';
+            canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+            canvasCtx.fillStyle = '#4cc9f0';
+            canvasCtx.font = '20px Arial';
+            canvasCtx.textAlign = 'center';
+            canvasCtx.fillText('音频已停止', canvas.width / 2, canvas.height / 2);
+        }
+        
+        // 事件监听器
+        toggleBtn.addEventListener('click', () => {
+            if (!isActive) {
+                startAmplifier();
+            } else {
+                stopAmplifier();
+            }
+        });
+        
+        volumeSlider.addEventListener('input', () => {
+            const value = parseFloat(volumeSlider.value);
+            volumeValue.textContent = `${value.toFixed(1)}x`;
+            
+            if (gainNode) {
+                gainNode.gain.value = value;
+            }
+            
+            updateVolumeIndicator(value);
+        });
+        
+        microphoneSelect.addEventListener('change', () => {
+            selectedDeviceId = microphoneSelect.value;
+        });
+        
+        // 窗口大小变化时调整画布
+        window.addEventListener('resize', () => {
+            if (canvas) {
+                canvas.width = canvas.clientWidth;
+                canvas.height = canvas.clientHeight;
+            }
+        });
+        
+        // 设备变化时重新获取设备列表
+        navigator.mediaDevices.addEventListener('devicechange', getMicrophoneDevices);
+        
+        // 初始化应用
+        function initApp() {
+            initVolumeIndicator();
+            getMicrophoneDevices();
+            stopVisualization();
+            
+            // 检查是否支持Web Audio API
+            if (!(window.AudioContext || window.webkitAudioContext)) {
+                alert('您的浏览器不支持Web Audio API，无法使用此工具。请使用Chrome、Firefox或Edge等现代浏览器。');
+                toggleBtn.disabled = true;
+            }
+        }
+        
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
